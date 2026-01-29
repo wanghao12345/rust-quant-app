@@ -1,16 +1,16 @@
 <template>
   <div class="flex h-screen bg-background">
     <!-- 左侧菜单栏 -->
-    <div class="hidden md:flex flex-col w-60 bg-surface shadow-lg z-10">
+    <div class="hidden md:flex flex-col w-56 bg-surface shadow-lg z-10">
       <!-- Logo -->
       <div class="p-6 border-b border-gray-200">
         <div class="flex items-center">
-          <div class="w-10 h-10 box-border border-1 border-solid border-primary rounded-md bg-primary overflow-hidden flex items-center justify-center mr-2">
+          <div class="w-10 h-10 box-border border-1 border-solid border-secondary rounded-md bg-secondary overflow-hidden flex items-center justify-center mr-2">
             <!-- <img src="/logo.png" alt="点赞AI" class="w-9 h-9 object-cover"> -->
           </div>
           <div>
-            <h1 class="text-sm font-bold text-text my-0">点赞AI</h1>
-            <p class="text-xs text-muted mt-1 mb-0">让每篇笔记都值得被赞！</p>
+            <h1 class="text-sm font-bold my-0">量化</h1>
+            <p class="text-xs mt-1 mb-0">让每个策略都有价值！</p>
           </div>
         </div>
       </div>
@@ -22,7 +22,7 @@
           :key="item.path"
           @click="handleMenuClick(item.path)"
           :class="{'text-primary bg-primary/10': item.path === $route.path}" 
-          class="w-full mb-2 text-[#666666] flex items-center cursor-pointer box-border px-4 py-3 rounded-8px  hover:bg-gray-100">
+          class="w-full mb-2 flex items-center cursor-pointer box-border px-4 py-3 rounded-8px  hover:bg-gray-100">
           <i :class="`iconfont ${item.icon} text-22px`"></i>
           <span class="ml-2 text-15px">{{ item.title }}</span>
         </div>
@@ -42,19 +42,24 @@ const router = useRouter();
 const state = reactive({
   menus: [
     {
-      title: "创作中心",
+      title: "仪表盘",
       icon: "icon-ziliao",
-      path: "/create"
+      path: "/dashboard"
     },
     {
-      title: "热门话题",
+      title: "策略中心",
       icon: "icon-huati",
-      path: "/hot-topics"
+      path: "/strategy"
+    },
+    {
+      title: "风控中心",
+      icon: "icon-huati",
+      path: "/risk"
     },
     {
       title: "个人中心",
       icon: "icon-gerenzhongxin-zhihui",
-      path: "/profile"
+      path: "/user"
     },
   ]
 });
