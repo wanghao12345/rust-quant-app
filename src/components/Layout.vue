@@ -38,24 +38,31 @@
 </template>
 
 <script setup>
+// import { useRouter, reactive } from 'vue';
+
 const router = useRouter();
 const state = reactive({
   menus: [
+    // {
+    //   title: "仪表盘",
+    //   icon: "icon-ziliao",
+    //   path: "/dashboard"
+    // },
     {
-      title: "仪表盘",
-      icon: "icon-ziliao",
-      path: "/dashboard"
-    },
-    {
-      title: "策略中心",
+      title: "策略管理",
       icon: "icon-huati",
       path: "/strategy"
     },
     {
-      title: "风控中心",
+      title: "回测引擎",
       icon: "icon-huati",
-      path: "/risk"
+      path: "/backtest"
     },
+    // {
+    //   title: "风控中心",
+    //   icon: "icon-huati",
+    //   path: "/risk"
+    // },
     {
       title: "个人中心",
       icon: "icon-gerenzhongxin-zhihui",
