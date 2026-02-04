@@ -1,6 +1,15 @@
+use std::sync::Arc;
+
+use crate::binance::client::BinanceClient;
+
 
 pub mod command;
 pub mod state;
+pub mod binance;
+pub mod models;
+pub mod error;
+
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -9,8 +18,12 @@ pub fn run() {
         .with_max_level(tracing::Level::INFO)
         .init();
 
+    let binance_client = Arc::new(BinanceClient::new());
+
     // 初始化状态
-    let state = state::AppState {};
+    let state = state::AppState { 
+        binance_client: binance_client.clone(),
+    };
 
     tauri::Builder::default()
         .manage(state)

@@ -1,22 +1,18 @@
-use serde::{Deserialize, Serialize};
 use tauri::State;
-
-use crate::state::AppState;
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct KlineRequest {
-    symbol: String,
-    interval: String,
-    start_time: u64,
-    end_time: u64,
-}
+use tracing::info;
+use crate::{
+    models::trade::KlineRequest, 
+    state::AppState
+};
 
 // 获取K线数据
 #[tauri::command]
 pub async fn fetch_klines(
-    _state: State<'_, AppState>,
-    _request: KlineRequest,
+    state: State<'_, AppState>,
+    request: KlineRequest,
 ) -> Result<(), String> {
+    info!("获取K线数据{:?}", request);
+    state.binance_client.get_klines(&request).await.map_err(|e| e.to_string())?;
     Ok(())
 }
 
