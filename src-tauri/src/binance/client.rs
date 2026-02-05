@@ -3,7 +3,7 @@ use std::time::Duration;
 use reqwest::Client;
 use serde_json::Value;
 use tauri::Url;
-use tracing::info;
+use tracing::{info, warn};
 
 use crate::{error::ServiceError, models::trade::{Kline, KlineRequest}};
 
@@ -30,11 +30,6 @@ impl BinanceClient {
     pub async fn get_klines(
         &self,
         request: &KlineRequest,
-        // symbol: &str,
-        // interval: &str,
-        // start_time: Option<u64>,
-        // end_time: Option<u64>,
-        // limit: Option<u32>,
     ) -> Result<Vec<Kline>, ServiceError> {
         let KlineRequest { symbol, interval, start_time, end_time, limit } = request;
         let mut url = Url::parse(&format!("{}/api/v3/klines", self.base_url)).map_err(|e| ServiceError::UrlError(e.to_string()))?;
@@ -58,14 +53,46 @@ impl BinanceClient {
         if !response.status().is_success() {
             return Err(ServiceError::BinanceError(format!("请求失败，状态码: {}", response.status())));
         }
-
         let json: Value = response.json().await.map_err(|e| ServiceError::BinanceError(e.to_string()))?;
-
-        info!("响应JSON: {:?}", json);
-
-        Ok(vec![])
+        self.parse_klines(json)
     }
 
+    pub fn parse_klines(&self, json: Value) -> Result<Vec<Kline>, ServiceError> {
+        // let klines: Vec<Kline> = serde_json::from_value(json).map_err(|e| ServiceError::BinanceError(e.to_string()))?;
+        let mut klines = Vec::new();
+        if let Value::Array(arr) = json {
+            for (i, item) in arr.iter().enumerate() {
+                if let Value::Array(kline_arr) = item {
+                    if kline_arr.len() < 11 {
+                        warn!("第{}个K线数据不完整: {:?}", i, kline_arr);
+                        continue;
+                    }
+                    let kline = Kline {
+                        open_time: kline_arr[0].as_u64().ok_or_else(|| ServiceError::BinanceError("open_time 字段解析失败".to_string()))?,
+                        open: kline_arr[1].as_str().ok_or_else(|| ServiceError::BinanceError("open 字段解析失败".to_string()))?.to_string(),
+                        high: kline_arr[2].as_str().ok_or_else(|| ServiceError::BinanceError("high 字段解析失败".to_string()))?.to_string(),
+                        low: kline_arr[3].as_str().ok_or_else(|| ServiceError::BinanceError("low 字段解析失败".to_string()))?.to_string(),
+                        close: kline_arr[4].as_str().ok_or_else(|| ServiceError::BinanceError("close 字段解析失败".to_string()))?.to_string(),
+                        volume: kline_arr[5].as_str().ok_or_else(|| ServiceError::BinanceError("volume 字段解析失败".to_string()))?.to_string(),
+                        close_time: kline_arr[6].as_u64().ok_or_else(|| ServiceError::BinanceError("close_time 字段解析失败".to_string()))?,
+                        quote_asset_volume: kline_arr[7].as_str().ok_or_else(|| ServiceError::BinanceError("quote_asset_volume 字段解析失败".to_string()))?.to_string(),
+                        number_of_trades: kline_arr[8].as_u64().ok_or_else(|| ServiceError::BinanceError("number_of_trades 字段解析失败".to_string()))?,
+                        taker_buy_base_asset_volume: kline_arr[9].as_str().ok_or_else(|| ServiceError::BinanceError("taker_buy_base_asset_volume 字段解析失败".to_string()))?.to_string(),
+                        taker_buy_quote_asset_volume: kline_arr[10].as_str().ok_or_else(|| ServiceError::BinanceError("taker_buy_quote_asset_volume 字段解析失败".to_string()))?.to_string(),
+                        ignore: kline_arr[11].as_str().ok_or_else(|| ServiceError::BinanceError("ignore 字段解析失败".to_string()))?.to_string(),
+                    };
+                    info!("第{}个K线数据: {:?}", i, kline);
+                    klines.push(kline);
+                } else {
+                    warn!("第{}个K线数据不是数组: {:?}", i, item);
+                }
+            }
+        } else {
+            warn!("响应JSON不是数组: {:?}", json);
+        }
+        info!("解析到{}条K线数据", klines.len());
+        Ok(klines)
+    }
     /// 获取交易所信息
     pub async fn get_exchange_info(&self) -> Result<Value, String> {
         Ok(Value::Null)
