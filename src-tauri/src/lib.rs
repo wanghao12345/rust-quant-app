@@ -8,6 +8,7 @@ pub mod state;
 pub mod binance;
 pub mod models;
 pub mod error;
+pub mod database;
 
 
 

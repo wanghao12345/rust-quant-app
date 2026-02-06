@@ -1,7 +1,7 @@
 use tauri::State;
 use tracing::info;
 use crate::{
-    models::trade::KlineRequest, 
+    models::trade::{Kline, KlineRequest}, 
     state::AppState
 };
 
@@ -16,8 +16,22 @@ pub async fn fetch_klines(
     Ok(())
 }
 
-// 获取交易对列表
+/// 获取缓存的K线数据
 #[tauri::command]
-pub async fn fetch_symbols() -> Vec<String> {
-    vec![]
+pub async fn get_cached_klines(
+    _state: State<'_, AppState>,
+    _request: KlineRequest,
+) -> Result<Vec<Kline>, String> {
+    Ok(vec![])
+    // state.klines_cache.get(&request).cloned().ok_or_else(|| "缓存中没有K线数据".to_string())
+}
+
+/// 更新缓存的K线数据
+#[tauri::command]
+pub async fn update_cache(
+    _state: State<'_, AppState>,
+    _symbol: String,
+    _interval: String
+) -> Result<usize, String> {
+    Ok(0)
 }
