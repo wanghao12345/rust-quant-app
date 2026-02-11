@@ -3,5 +3,5 @@
 
 #[tokio::main]
 async fn main() {
-    rust_quant_app_lib::run()
+    rust_quant_app_lib::run().await
 }

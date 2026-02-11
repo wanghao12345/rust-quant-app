@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::binance::client::BinanceClient;
+use crate::{binance::client::BinanceClient, database::store::MarketDataStore};
 
 
 pub mod command;
@@ -13,7 +13,7 @@ pub mod database;
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
+pub async fn run() {
     // 初始化日志
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
@@ -21,9 +21,20 @@ pub fn run() {
 
     let binance_client = Arc::new(BinanceClient::new());
 
+    // 初始化数据库
+    let db_path = "binance.db";
+    let data_store = match MarketDataStore::new(db_path).await {
+        Ok(store) => Arc::new(store),
+        Err(e) => {
+            tracing::error!("数据库初始化失败: {:?}", e);
+            panic!("数据库初始化失败: {:?}", e);
+        }
+    };
+
     // 初始化状态
     let state = state::AppState { 
         binance_client: binance_client.clone(),
+        data_store: data_store.clone(),
     };
 
     tauri::Builder::default()
